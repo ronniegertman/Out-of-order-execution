@@ -13,6 +13,7 @@ struct node{
 struct tree{
     struct node* commands;
     int* registers;
+    int amount_of_commands;
 };
 
 ProgCtx analyzeProg(const unsigned int opsLatency[], const InstInfo progTrace[], unsigned int numOfInsts) {
@@ -66,23 +67,46 @@ ProgCtx analyzeProg(const unsigned int opsLatency[], const InstInfo progTrace[],
 
     prog_ctx->commands = commands;
     prog_ctx->registers = registers;
+    prog_ctx->amount_of_commands = numOfInsts;
     return prog_ctx;
    
 }
 
 void freeProgCtx(ProgCtx ctx) {
+    struct tree* prog_ctx = (struct tree*)ctx;
+    free(prog_ctx->commands);
+    free(prog_ctx->registers);
+    free(prog_ctx);
 }
 
 int getInstDepth(ProgCtx ctx, unsigned int theInst) {
-    return -1;
+    struct tree* prog_ctx = (struct tree*)ctx;
+    return prog_ctx->commands[theInst].latency;
 }
 
 int getInstDeps(ProgCtx ctx, unsigned int theInst, int *src1DepInst, int *src2DepInst) {
-    return -1;
+    struct tree* prog_ctx = (struct tree*)ctx;
+    if (src1DepInst == NULL || src2DepInst == NULL || theInst < 0 ||
+         theInst >= prog_ctx->amount_of_commands){
+        return -1;
+    }
+    int parent1 = prog_ctx->commands[theInst].parent1;
+    int parent2 = prog_ctx->commands[theInst].parent2;
+    *src1DepInst = parent1;
+    *src2DepInst = parent2;
+    return 0;
 }
 
 int getProgDepth(ProgCtx ctx) {
-    return 0;
+    struct tree* prog_ctx = (struct tree*)ctx;
+    int max_length = 0;
+    for (int i=0; i<prog_ctx->amount_of_commands; i++){
+        int branch_length = prog_ctx->commands[i].depth + prog_ctx->commands[i].latency;
+        if (branch_length > max_length){
+            max_length = branch_length;
+        } 
+    }
+    return max_length;
 }
 
 
