@@ -81,7 +81,7 @@ void freeProgCtx(ProgCtx ctx) {
 
 int getInstDepth(ProgCtx ctx, unsigned int theInst) {
     struct tree* prog_ctx = (struct tree*)ctx;
-    return prog_ctx->commands[theInst].latency;
+    return prog_ctx->commands[theInst].depth;
 }
 
 int getInstDeps(ProgCtx ctx, unsigned int theInst, int *src1DepInst, int *src2DepInst) {
